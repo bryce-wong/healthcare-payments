@@ -1,0 +1,77 @@
+---
+title: "Healthcare Payments Analysis"
+author: "Bryce Wong"
+date: "2024-03-25"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest)
+library(httr)
+```
+
+## Importing data
+
+```{r function_to_read_data}
+research_payments_load_and_tidy = function(path) {
+  
+  df = 
+    read_csv(file = path) %>% 
+    janitor::clean_names() 
+  
+  df
+  
+}
+
+```
+
+```{r list_of_datasets, message=TRUE, warning=TRUE}
+research_payments_raw = list(
+    "./data/OP_DTL_RSRCH_PGYR2016_P01182024.csv",
+    "./data/OP_DTL_RSRCH_PGYR2017_P01182024.csv",
+    "./data/OP_DTL_RSRCH_PGYR2018_P01182024.csv",
+    "./data/OP_DTL_RSRCH_PGYR2019_P01182024.csv",
+    "./data/OP_DTL_RSRCH_PGYR2020_P01182024.csv",
+    "./data/OP_DTL_RSRCH_PGYR2021_P01182024.csv"
+    # ,
+    # "./data/OP_DTL_RSRCH_PGYR2022_P01182024.csv"
+  )
+
+```
+
+
+```{r map_function_to_datasets}
+research_payments_tidy = bind_rows(map(research_payments_raw, research_payments_load_and_tidy))
+
+```
+
+## Explore data
+
+```{r total_payment_amounts, eval=FALSE}
+
+research_payments %>% 
+  filter(total_amount_of_payment_us_dollars < 10000) %>% 
+  ggplot(aes(x = total_amount_of_payment_us_dollars)) +
+  geom_histogram(bins = 15)
+
+```
+
+```{r view_research_payments}
+
+research_payments %>% 
+  filter(total_amount_of_payment_us_dollars < 10000) %>% 
+  ggplot(aes(x = product_category_or_therapeutic_area_1 )) +
+  geom_histogram(stat="count")
+
+```
+
+```{r}
+research_payments |>
+  group_by(product_category_or_therapeutic_area_1) |>
+  summarize(n_obs = n())
+```
+
+
+
